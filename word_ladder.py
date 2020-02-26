@@ -1,6 +1,5 @@
 #!/bin/python3
 
-
 def word_ladder(start_word, end_word, dictionary_file='words5.dict'):
     '''
     Returns a list satisfying the following properties:
@@ -28,42 +27,52 @@ def word_ladder(start_word, end_word, dictionary_file='words5.dict'):
     Whenever it is impossible to generate a word ladder between the two words,
     the function returns `None`.
     '''
-    import collections as cl
-    import copy
+    from collections import deque
+    from copy import deepcopy
 
-    f = open('words5.dict')
-    dictionary = f.readlines()
-    
-    if start_word in dictionary:
-        dictionary.remove(start_word)
 
-#   if end_word not in dictionary:
-#       return 0
+    d = open(dictionary_file)
+    dictionary = d.read().split("\n")
+    stack = []
+    stack.append(start_word)
+    queue = deque()
+    queue.append(stack)
+    if start_word == end_word:
+        return stack
 
-    dictionary.append(end_word)
-    queue = cl.deque([[start_word, 1]])
-    leng = len(start_word)
-    ladder = []
-    while queue:
-        word, length = queue.popleft()
-        ladder.append(word)
-        if word == end_word:
-            return ladder
-        dictionary_copy = dictionary.copy()
-        for n in dictionary_copy:
-            if sum(n[i] != word[i] for i in range(leng)) == 1:
-                dictionary.remove(n)
-                queue.append([n, length+1])
-    return 0
+    while len(queue) != 0:
+        q  = queue.pop()
+        dictionary_copy = deepcopy(dictionary)
+        for i in dictionary_copy:
+            if _adjacent(q[-1], i) is True:
+                copy = deepcopy(q)
+                copy.append(i)
+                if i == end_word:
+                    return copy
+                queue.appendleft(copy)
+                dictionary.remove(i)
+    return None
 
 def verify_word_ladder(ladder):
     '''
     Returns True if each entry of the input list is adjacent to its neighbors;
     otherwise returns False.
     '''
-    for i in range(len(ladder) - 1):
-        if _adjacent(ladder[i], ladder[i+1]) == True:
-            return True
+    if len(ladder) == 1:
+        return True
+    elif len(ladder) == 2:
+        for i in range(len(ladder)):
+            if _adjacent(ladder[i], ladder[i+1]) == True:
+                return True
+    elif len(ladder) > 0 and len(ladder) != 1 and len(ladder) != 2:
+        for i in range(len(ladder)-1):
+            if _adjacent(ladder[i], ladder[i+1]) == True:
+                continue
+            else:
+                return False
+        return True
+    else:
+        return False
 
 def _adjacent(word1, word2):
     '''
@@ -75,13 +84,25 @@ def _adjacent(word1, word2):
     >>> _adjacent('stone','money')
     False
     '''
+#   import math
+ #  same = 0
+#   for i in range(len(word1)):
+#       if word1[i] == word2[i]:
+#           same += 1
+#       if abs(same-len(word1)) == 1:
+#           return True
+#       else:
+#           return False
+    from string import ascii_lowercase
     matches = []
     if len(word1) == len(word2):
         for i in range(len(word1)):
-            if word1[i] == word2[i]:
-                matches.append('1')
+            if word1[i] in ascii_lowercase and word2[i] in ascii_lowercase:
+                if word1[i] == word2[i]:
+                    matches.append('1')
 
     if len(matches) >= len(word1) - 1:
         return True
     else:
         return False
+
